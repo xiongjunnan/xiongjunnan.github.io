@@ -5,9 +5,10 @@ layout: home
 <div class="index-content project">
     <div class="section">
         <ul class="artical-cate">
-            <li><a href="/"><span>文章</span></a></li>
-            <li style="text-align:center"><a href="/resource"><span>常用资源</span></a></li>
-            <li class="on" style="text-align:right"><a href="/project"><span>项目</span></a></li>
+		
+            <li ><a href="/blog"><span>官方出版</span></a></li>
+            <li class="on" style="text-align:center"><a href="/member_blog"><span>成员精华</span></a></li>
+            <li  style="text-align:right"><a href="/resource"><span>常用资源</span></a></li>
         </ul>
 
         <div class="cate-bar"><span id="cateBar"></span></div>
