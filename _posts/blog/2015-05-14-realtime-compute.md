@@ -22,9 +22,8 @@ description: 王新春：大众点评网数据平台资深工程师负责点评�
 * 新激活用户数：主APP
 * 实时交易额：闪惠/团购交易额
 
-以报表平台为例，下图是一张APP UV的实时曲线图，它以分钟级别粒度展现了 实时的DAU数据和曲线。
-![](http://note.youdao.com/yws/api/group/9741968/noteresource/2617BBF1531148CF88B24C8EC6481486/version/80?method=get-resource&shareToken=A30B6CB619DC47CE822D884211D53B48&entryId=60728238)
-
+以报表平台为例，下图是一张APP UV的实时曲线图，它以分钟级别粒度展现了 实时的DAU数据和曲线。  
+图略  （隐私原因）  
 从图中可以看见一个尖点，这个尖点就是当天push过后带来的用户，这样可以看到实时的运营效率。
 
 #####类别二：搜索、推荐、安全等
