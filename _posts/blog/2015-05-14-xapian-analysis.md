@@ -201,6 +201,7 @@ bloomfilter的及时引入确实很救命. 数据检索更新和查重节省了�
 
 1、拼音库有现成的,如果觉得不可靠可以通过Character Map提供的数据自己做一份.   
 2、模糊音匹配我的理解应该就是纠错, 根据编辑距离, 前提是你有把握识别出这是用户输入错误.看下图:
+![](http://note.youdao.com/yws/api/group/9741968/noteresource/52254d53c2cbb5ffbc541ff37455aaba/version/106?method=get-resource&shareToken=A62213703ADA45B8978B5C9DAC8B2DB4&entryId=60796715)
 
 #####Q6: 用户的意图你们是怎样预期及理解的？
 
