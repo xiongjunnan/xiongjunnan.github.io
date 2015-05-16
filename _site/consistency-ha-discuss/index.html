@@ -34,44 +34,7 @@
     <div class="entry markdown-body">
         <h1 class="entry-title"><a href="/consistency-ha-discuss" title="【群个人整理和拓展】强一致性和高可用性的协调">【群个人整理和拓展】强一致性和高可用性的协调</a></h1>
         <p class="entry-date">2015-05-15</p>
-        <p>此文根据【QCON高可用架构群】分享内容，由群内【编辑组】志愿整理，转发请注明出处。</p>
-
-<blockquote><p>请教大家个问题。对于涉及到如交易之类的业务场景，用消息队列异步处理提高并发时，怎么保证100%可靠性? 大家的弥补措施怎么做的？</p></blockquote>
-
-<h2>垂直搜索的应用场景</h2>
-
-<p>下面是几张图片, 看下基本的业务场景<br/>
-<img src="http://note.youdao.com/yws/api/group/9741968/noteresource/fd0f3250bc9cabfa5b6a3ee5bc1a320a/version/100?method=get-resource&amp;shareToken=A62213703ADA45B8978B5C9DAC8B2DB4&amp;entryId=60796715" alt="" />
-<img src="http://note.youdao.com/yws/api/group/9741968/noteresource/dfb97ab57440422514af4c842c1a88b7/version/101?method=get-resource&amp;shareToken=A62213703ADA45B8978B5C9DAC8B2DB4&amp;entryId=60796715" alt="" /></p>
-
-<h5>这是两个典型场景.</h5>
-
-<ul>
-<li>第一个场景基于拼音的搜索, 可以从开始处搜索, 可以从中间搜索.</li>
-<li>第二个是常见的政府网站的搜索, 截图里说明存在的问题.</li>
-</ul>
-
-
-<h5>归纳一下业务场景有:</h5>
-
-<ul>
-<li>1、传统封闭系统的检索(ERP/CRM/OA, 知识管理系统, 站内搜索, 各种企业/电子政务系统的检索)</li>
-<li>2、新型大众用户系统的检索(移动应用和桌面应用, 交互友好的WEB系统)</li>
-<li>3、技术应用(拼音-汉字的检索, 自动补全, 对于推荐系统的支持)</li>
-<li>4、解救数据库的like查询,根据数据库数据量级和文本长度不同, 性能可以提高数个量级</li>
-</ul>
-
-
-<h5>关于应用场景不做展开说明, 只举一两个例子:</h5>
-
-<ul>
-<li>很多政府信息公开网站的站内搜索使用数据库的like, 导致大量有用信息无法查询(参考图片), 需要用垂直搜索技术提高查询的质量</li>
-<li>拼音查询, 文字起始处查询和文字中间查询(微信图片)</li>
-<li>App本地搜索(微信图片)</li>
-</ul>
-
-
-<p>从应用场景上看, 目前在大数据, 用户产生数据的背景下, 搜索的需求是刚性的.</p>
+        
 
     </div>
 
@@ -80,6 +43,8 @@
     <div class="sidenav">
         <h2>官方出版</h2>
         <ul class="artical-list">
+        
+            <li><a href="/different-silicon-valley">【图文直播全文记录】给你介绍一个不一样的硅谷</a></li>
         
             <li><a href="/xapian-analysis">【直播全文记录】基于Xapian的垂直搜索引擎的构建分析</a></li>
         
