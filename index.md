@@ -6,7 +6,7 @@ layout: home
     <div class="section">
         <ul class="artical-cate">
             <li class="on"><a href="/blog"><span>官方出版</span></a></li>
-            <li style="text-align:center"><a href="/member_blog"><span>成员精华</span></a></li>
+            <li style="text-align:center"><a href="/member_blog"><span>分享延伸</span></a></li>
             <li  style="text-align:right"><a href="/resource"><span>常用资源</span></a></li>
         </ul>
 
