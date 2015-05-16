@@ -5,7 +5,7 @@
     * Author:         BeiYuu
     -->
     <meta charset="utf-8" />
-    <title>【群个人整理和拓展】强一致性和高可用性的协调 | xiongjunnan.github.io</title>
+    <title>【群聊直播主题】聚集第三方数据展示系统架构如何设计 | xiongjunnan.github.io</title>
     <meta name="author" content="Xiongjunnan" />
     <meta name="renderer" content="webkit">
     <meta name="description" content="Xiongjunnan's Blog" />
@@ -32,9 +32,91 @@
 
 	<div id="content">
     <div class="entry markdown-body">
-        <h1 class="entry-title"><a href="/consistency-ha-discuss" title="【群个人整理和拓展】强一致性和高可用性的协调">【群个人整理和拓展】强一致性和高可用性的协调</a></h1>
+        <h1 class="entry-title"><a href="/consistency-ha-discuss" title="【群聊直播主题】聚集第三方数据展示系统架构如何设计">【群聊直播主题】聚集第三方数据展示系统架构如何设计</a></h1>
         <p class="entry-date">2015-05-15</p>
-        
+        <blockquote><p>引子： 如果某旅游网想把旅游信息展示到第三方平台上或者说某系统只是把好多其他商家的数据聚合到统一的系统上，一般如何架构？</p></blockquote>
+
+<p> <br></p>
+
+<h2>数据对接方式选型，PULL 还是 POST？</h2>
+
+<p>具体选择需要根据实际业务做权衡：</p>
+
+<h6>1、如果平台系统很大部分是通过聚合第三方数据再展示</h6>
+
+<ul>
+<li>第三方post数据，自己做统一数据开放API。</li>
+</ul>
+
+
+<p>优势：</p>
+
+<ul>
+<li>一次完成，无限制接入商户，只要提高聚合平台的服务能力</li>
+<li>实时性高、数据交互少</li>
+</ul>
+
+
+<p>存在问题和约束：</p>
+
+<ul>
+<li>由于第三方服务的可靠性和误操作等无法保障，所以对自身服务的稳定性要求高。</li>
+<li>数据更新的时效性由第三方控制（当然平台服务本身也可控制）</li>
+<li>平台方的需要支撑的服务能力，只能预估，不好控制，比如第三方数据量突然暴增</li>
+</ul>
+
+
+<h6>2、如果只有小部分内容聚合第三方</h6>
+
+<p>推荐方式：</p>
+
+<ul>
+<li>平台方pull</li>
+</ul>
+
+
+<p>优势：</p>
+
+<ul>
+<li>服务能力和平台稳定性只和自己有关，不依赖第三方服务</li>
+</ul>
+
+
+<p>存在问题和约束：</p>
+
+<ul>
+<li>此类方式需根据第三方的API，把所有的数据转换成自己格式，每接入一家第三方需要增加研发工作量。</li>
+</ul>
+
+
+<h2>实施细节</h2>
+
+<p>如果系统会需要各个第三方的数据信息，一般不仅仅是展示，还包含其它业务操作。
+使用post方案，有几个需要注意点：</p>
+
+<ul>
+<li>接入，数据，读取等方面需要做隔离</li>
+<li>接入使用mq可以提高吞吐</li>
+<li>读数据的时候用Cache提高性能</li>
+<li>前期需要考虑好数据存储和数据的量级，因为是第三方的数据，在存储的扩展性方面要有比较好的方案（eg：前期mysql， 后期hbase）</li>
+</ul>
+
+
+<h2>系统架构</h2>
+
+<h3>应用</h3>
+
+<p>按业务划分成子模块、服务或子系统</p>
+
+<h3>高性能</h3>
+
+<p>1、接入，数据，读取等方面需要做隔离和切分
+2、使用MQ提高吞吐
+MQ可选择：Redis、</p>
+
+<h3>可用性</h3>
+
+<p>nginx和lvs去保障</p>
 
     </div>
 
@@ -53,7 +135,7 @@
         <h2>成员精华</h2>
         <ul class="artical-list">
         
-            <li><a href="/consistency-ha-discuss">【群个人整理和拓展】强一致性和高可用性的协调</a></li>
+            <li><a href="/consistency-ha-discuss">【群聊直播主题】聚集第三方数据展示系统架构如何设计</a></li>
         
         </ul>
 
