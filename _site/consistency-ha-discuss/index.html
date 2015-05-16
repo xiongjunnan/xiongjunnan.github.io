@@ -5,7 +5,7 @@
     * Author:         BeiYuu
     -->
     <meta charset="utf-8" />
-    <title>OverAPI | xiongjunnan.github.io</title>
+    <title>【群个人整理和拓展】强一致性和高可用性的协调 | xiongjunnan.github.io</title>
     <meta name="author" content="Xiongjunnan" />
     <meta name="renderer" content="webkit">
     <meta name="description" content="Xiongjunnan's Blog" />
@@ -32,41 +32,46 @@
 
 	<div id="content">
     <div class="entry markdown-body">
-        <h1 class="entry-title"><a href="/overapi-cheatsheet" title="OverAPI">OverAPI</a></h1>
-        <p class="entry-date">2012-09-22</p>
-        <p><a href="http://overapi.com" title="OverAPI - Collecting all the cheat sheets">OverAPI</a>是一个从我自己的需求出发，搭建起来的项目。项目结构很简单，将常用语言的API很扁平的展现出来，方便翻阅和查找。</p>
+        <h1 class="entry-title"><a href="/consistency-ha-discuss" title="【群个人整理和拓展】强一致性和高可用性的协调">【群个人整理和拓展】强一致性和高可用性的协调</a></h1>
+        <p class="entry-date">2015-05-15</p>
+        <p>此文根据【QCON高可用架构群】分享内容，由群内【编辑组】志愿整理，转发请注明出处。</p>
 
-<p>Chrome插件下载：<a href="https://chrome.google.com/webstore/detail/oedodeocfdeegliepeeoieemhdgoijod?hl=zh-CN" title="All Cheat Sheets">All Cheat Sheets</a></p>
+<blockquote><p>请教大家个问题。对于涉及到如交易之类的业务场景，用消息队列异步处理提高并发时，怎么保证100%可靠性? 大家的弥补措施怎么做的？</p></blockquote>
 
-<p><a href="http://overapi.com" title="OverAPI - Collecting all the cheat sheets" target="_blank"><img src="/images/overapi/overapi.jpg" alt="OverAPI"></a></p>
+<h2>垂直搜索的应用场景</h2>
 
-<p>生活在继续，遇到的人和事越来越繁杂，于是，满目的秋意、愉悦的欢叫，都像微风一样，带来的是美妙的简单。</p>
+<p>下面是几张图片, 看下基本的业务场景<br/>
+<img src="http://note.youdao.com/yws/api/group/9741968/noteresource/fd0f3250bc9cabfa5b6a3ee5bc1a320a/version/100?method=get-resource&amp;shareToken=A62213703ADA45B8978B5C9DAC8B2DB4&amp;entryId=60796715" alt="" />
+<img src="http://note.youdao.com/yws/api/group/9741968/noteresource/dfb97ab57440422514af4c842c1a88b7/version/101?method=get-resource&amp;shareToken=A62213703ADA45B8978B5C9DAC8B2DB4&amp;entryId=60796715" alt="" /></p>
 
-<p>我们总想拥有一切，可一切到底有多少，就像诺兰的处女作<a href="http://movie.douban.com/subject/1397546/" title="Following">Following</a>中表现的一样，一些物品只有在失去时才知道他存在过。</p>
-
-<p>人生有目标才能前进，无论这个目标能否实现，OverAPI的目标是拥有一切，如果你有兴趣一起实现，可以联系我。</p>
-
-<p>现在已经有：</p>
+<h5>这是两个典型场景.</h5>
 
 <ul>
-<li><a href="http://overapi.com/python/">Python Cheat Sheet</a></li>
-<li><a href="http://overapi.com/jquery/">jQuery Cheat Sheet</a></li>
-<li><a href="http://overapi.com/nodejs/">NodeJS Cheat Sheet</a></li>
-<li><a href="http://overapi.com/php/">PHP Cheat Sheet</a></li>
-<li><a href="http://overapi.com/ruby/">Ruby Cheat Sheet</a></li>
-<li><a href="http://overapi.com/javascript/">Javascript Cheat Sheet</a></li>
-<li><a href="http://overapi.com/actionscript/">ActionScript Cheat Sheet</a></li>
-<li><a href="http://overapi.com/css/">CSS Cheat Sheet</a></li>
-<li><a href="http://overapi.com/git/">Git Cheat Sheet</a></li>
-<li><a href="http://overapi.com/svn/">SVN Cheat Sheet</a></li>
-<li><a href="http://overapi.com/mysql/">MySQL Cheat Sheet</a></li>
-<li><a href="http://overapi.com/regex/">Regex Cheat Sheet</a></li>
-<li><a href="http://overapi.com/linux/">Linux Cheat Sheet</a></li>
-<li><a href="http://overapi.com/html/">HTML Cheat Sheet</a></li>
-<li><a href="http://overapi.com/html-dom/">HTML-DOM Cheat Sheet</a></li>
-<li><a href="http://overapi.com/mod_rewrite/">mod_rewrite Cheat Sheet</a></li>
+<li>第一个场景基于拼音的搜索, 可以从开始处搜索, 可以从中间搜索.</li>
+<li>第二个是常见的政府网站的搜索, 截图里说明存在的问题.</li>
 </ul>
 
+
+<h5>归纳一下业务场景有:</h5>
+
+<ul>
+<li>1、传统封闭系统的检索(ERP/CRM/OA, 知识管理系统, 站内搜索, 各种企业/电子政务系统的检索)</li>
+<li>2、新型大众用户系统的检索(移动应用和桌面应用, 交互友好的WEB系统)</li>
+<li>3、技术应用(拼音-汉字的检索, 自动补全, 对于推荐系统的支持)</li>
+<li>4、解救数据库的like查询,根据数据库数据量级和文本长度不同, 性能可以提高数个量级</li>
+</ul>
+
+
+<h5>关于应用场景不做展开说明, 只举一两个例子:</h5>
+
+<ul>
+<li>很多政府信息公开网站的站内搜索使用数据库的like, 导致大量有用信息无法查询(参考图片), 需要用垂直搜索技术提高查询的质量</li>
+<li>拼音查询, 文字起始处查询和文字中间查询(微信图片)</li>
+<li>App本地搜索(微信图片)</li>
+</ul>
+
+
+<p>从应用场景上看, 目前在大数据, 用户产生数据的背景下, 搜索的需求是刚性的.</p>
 
     </div>
 
