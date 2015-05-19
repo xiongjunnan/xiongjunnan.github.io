@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!--
+    * Author:         BeiYuu
+    -->
+    <meta charset="utf-8" />
+    <title>【图文直播全文记录】关于im的一切 （上） | xiongjunnan.github.io</title>
+    <meta name="author" content="Xiongjunnan" />
+    <meta name="renderer" content="webkit">
+    <meta name="description" content="Xiongjunnan's Blog" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <link rel="stylesheet" href="/css/default.css" type="text/css" />
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+    <link rel="alternate" type="application/atom+xml" title="Recent Entries" href="/atom.xml" />
+    <script src="/js/jquery-1.7.1.min.js" type="text/javascript"></script>
+</head>
+<body>
+
+    
+
+    <link rel="stylesheet" href="/js/prettify/prettify.css" />
+<style type="text/css">
+    body { background:#e8e8e8; }
+    @media screen and (max-width: 750px){
+        body { background:#fff; }
+    }
+    @media screen and (max-width: 1020px){
+        body { background:#fff; }
+    }
+</style>
+
+	<div id="content">
+    <div class="entry markdown-body">
+        <h1 class="entry-title"><a href="/im-architecture" title="【图文直播全文记录】关于im的一切 （上）">【图文直播全文记录】关于im的一切 （上）</a></h1>
+        <p class="entry-date">2015-05-17</p>
+        <p>此文根据【QCON高可用架构群】分享内容，由群内【编辑组】志愿整理，转发请注明出处。</p>
+
+<blockquote><p>沈剑，目前任58同城技术委员会主席，高级架构师，优秀讲师。负责过百度hi，58帮帮等im系统的架构设计。同时，欢迎大家关注沈剑讲师的微信公众号“架构师之路”。</p></blockquote>
+
+<p><img src="/images/im-architecture/1.png"></p>
+
+<h2>一、什么是IM</h2>
+
+<h3>1、IM概述</h3>
+
+<p>IM 是“instant messaging”的简称，翻译成即时通讯。说到即时通讯,我们可能最先想到的是一款叫 ICQ的聊天软件 ，后来者还有微信／skype／msn／momo等 。IM包含即时和通讯是两个关键词。</p>
+
+<ul>
+<li><p>即时<br/>
+英文为“instant”或“real time”,表示“立刻”,就是响应非常快，速度的快慢由人的预期决定，而不是绝对时间。IM消息的发出和送达，达到秒级、毫秒级即可认为是快的。</p></li>
+<li><p>通讯<br/>
+通讯就是双方按照既定协议交换信息。所谓“协议”，是双方约定达成一致的一个某种约定。</p></li>
+</ul>
+
+
+<p>所以“即时通讯”，从字面上看，就是快速，按照一定协议交换信息。</p>
+
+<p>下图是一个ICQ的截图：<br/>
+<img src="/images/im-architecture/2.png"></p>
+
+<h3>2、IM系统特性</h3>
+
+<p>im系统相对其他系统而言有自己的几个特点：</p>
+
+<ul>
+<li>实时性</li>
+</ul>
+
+
+<p>以Web IM为例，Web站点通常是以请求/响应交互的 ,当Web IM一端接收消息时，最直观的做法就是轮询请求收取消息，实时性和轮询间隔有关。其实Web IM也可以做到完全实时，后续会讲到如何实现。</p>
+
+<ul>
+<li>推送性</li>
+</ul>
+
+
+<p>IM不是请求/响应的方式，而是主动推送消息，所以这个“推”是IM系统与其他系统有区别的地方，比如电商或搜索，都是一请求、一响应的方式。</p>
+
+<p>以股市变化曲线为例 ：</p>
+
+<p><img src="/images/im-architecture/3.png"></p>
+
+<p>客户端不主动发送请求，曲线会随时间自动变化 。</p>
+
+<ul>
+<li>消息可达性</li>
+</ul>
+
+
+<p>消息可达性即消息的可靠投递 ，有一个著名的定理：SMC定理，Single-Message Communication,Published in : Communications, IEEE Transactions on (Volume:24 , Issue: 2 ) ，很短的一个论文，文章的结论是，任何端到端的消息传递协议 ，消息既不丢失，同时也不重复是不可能的。</p>
+
+<p>后续会分享，系统层面的重复，可以换取业务层面的不丢失和不重复。</p>
+
+<ul>
+<li>状态一致性</li>
+</ul>
+
+
+<p>大部分人可能了解XMPP（Extensible Messaging and Presence Protocol ）协议 ，即可扩展消息和Presence协议 ，这个Presence直接翻译就是“出席“，何为出席？ 大家都到群内签到了，叫出席 ，没来听讲座叫缺席 ，在IM中出席缺席表示状态 。登录在线叫出席，没登录叫缺席 。<br/>
+几乎所有的IM请求都和状态相关（比如：在线转发，不在线存离线） ，所以状态的一致性尤为重要 。</p>
+
+<p>举个例子：</p>
+
+<p>假设用户A有100个好友，用户A加入了10个群，每个群有100个人。用户A在登录的一瞬间，状态由“不在线”变为了“在线”，他的状态的变更需要通知要通知1100个人，包括100个好友和1000个群友，这个扩散系数是非常庞大，</p>
+
+<p>如何做这1100个人的状态推送？ 常见的做法和Feed，微博类似 ，你的100个好友（实时性要求很高），采用推的模式 ，你的1000个群友采用拉的模式（实时性要求不高） 。当然，这里还只是说状态很很复杂，还没涉及到状态一致性问题。</p>
+
+<h2>二、协议设计</h2>
+
+<p>网络协议是由三个要素组成，语义、语法、时序。语义表示要做什么，语法表示要怎么做，时序表示做的顺序。 本文主要讲解重点语法的设计。</p>
+
+<p>IM的协议分为3层，如下图： <br/>
+<img src="/images/im-architecture/4.png"></p>
+
+<h3>应用层</h3>
+
+<p>常用的IM应用层协议有3种 ：</p>
+
+<h5>1、文本协议</h5>
+
+<p>文本协议是“贴近人类书面语言”的协议，典型例子是MSN ,另外HTTP协议也是文本协议，如下图所示：<br/>
+<img src="/images/im-architecture/5.png"></p>
+
+<p>文本协议有几个特点：</p>
+
+<ul>
+<li>可读性好／便于调试</li>
+<li>扩展性也好（key：value）</li>
+<li>解析效率一般（一行一行读入，按照冒号分割，解析key和value），</li>
+<li>对二进制的支持不好 ，比如语音／视频</li>
+</ul>
+
+
+<h5>2、 二进制协议</h5>
+
+<p>二进制协议最典型的是IP协议，如下图所示：
+<img src="/images/im-architecture/6.png"></p>
+
+<p>二进制协议一般定长包头和可扩展变长包体 ，每个字段固定了含义 ，例如IP协议的前4个bit表示协议版本号 （Version）。IM中，QQ使用的时二进制协议。</p>
+
+<p>二进制协议有几个特点：</p>
+
+<ul>
+<li>可读性差／难于调试</li>
+<li>扩展性不好 ，如果要扩展字段，旧版协议就不兼容了，所以一般设计时会有一个Version字段</li>
+<li>解析效率超高（几乎没有解析代价）</li>
+<li>对二进制的支持不好 ，比如语音／视频</li>
+</ul>
+
+
+<h5>3、流式XML</h5>
+
+<p>Xmpp协议就是使用流式XML，像Gtalk，校内通都是基于Xmpp的。</p>
+
+<p>举一个罗密欧给朱丽叶发消息的例子：</p>
+
+<p><message  to='romeo@example.net’  from='juliet@example.com’ type=‘chat’
+xml:lang=‘en’>
+<body>Wherefore art thou, Romeo?</body>
+</message></p>
+
+<p>Xmpp用 romeo@example.net 来标示一个账号，称为JID 。JID由两个部分组成 ，前半部分是该域中的账号体系 ，后半部分是域标识（编者注：JID还包含一个Resource部分）。Xmpp协议可以实现跨域的互通。例如Gtalk和校内通用户聊天。只要服务端实现了s2s服务（server to server） ，不过现在的IM基本没有互通需求 ，所以 这个服务基本没有人实现。</p>
+
+<p>Xmpp协议有几个特点：</p>
+
+<ul>
+<li>它是准标准协议，可以跨域互通</li>
+<li>XML的优点，可读性好，扩展性好</li>
+<li>解析代价超高 (dom解析)</li>
+<li>有效数据传输率超低（大量的标签 ）</li>
+</ul>
+
+
+<p>我个人强烈不建议使用Xmpp，特别是无线端IM，这个是google上个世纪的产物了，如果要用，一定要自己做压缩 ，减少网络流量。</p>
+
+<h6>编者注：关于是否使用XMPP，编者持保留意见</h6>
+
+<h4>实际例子</h4>
+
+<p>下面来看一个IM协议的实际例子 ，一般常见的做法是：定长二进制包头，可扩展变长包体可以使用用文本、XML等。
+百度Hi 的IM包体用的是XML ，58同城的IM包体用的是protobuffer，包头负责传输和解析效率，包体与业务无关负责保证扩展性。</p>
+
+<p><img src="/images/im-architecture/7.png"></p>
+
+<p>这是一个简单例子，我们来看一下包头和包体 。</p>
+
+<h5>定长包头（16个字节）</h5>
+
+<ul>
+<li>前4个字节是Version</li>
+<li>接下来的4个字节是个“魔法数字（magic_num）“，用来保证数据错位或丢包问题，常见的做法是，包头放几个约定好的特殊字符，包尾放几个约定好的特殊字符 约定好，发给你的协议，某几个字节位置，是0x 01020304 。才是正常报文</li>
+<li>接下来是command（命令号），用来区分是keepalive报文、业务报文、密钥交换报文等</li>
+<li>len（包体长度），告知服务端要接收多长的包体</li>
+</ul>
+
+
+<h5>变长包体</h5>
+
+<p>可选择 Xml、protobuffer、百度的mcpack</p>
+
+<p>58同城使用protobuffer，作者也强烈推荐，主要有几个原因：</p>
+
+<ul>
+<li>现成的解析库种类多，可以生成C++、Java、php等代码</li>
+<li>自带压缩功能</li>
+<li>在工业界已广泛应用</li>
+<li>Google制造</li>
+</ul>
+
+
+<p> 下面贴一个protobuffer写的用户登录协议的示例：
+<img src="/images/im-architecture/8.png"></p>
+
+<h3>安全层</h3>
+
+<p>IM协议，消息的保密性非常重要 ，谁都不希望自己聊天内容被看到</p>
+
+<h5>https</h5>
+
+<p>稍微复杂，代价有点高 。</p>
+
+<h5>自行加解密</h5>
+
+<p>密钥管理方式有多种</p>
+
+<p>1、固定密钥
+服务端和客户端约定好一个密钥，同时约定好一个加密算法（eg：AES ），每次客户端IM在发送前，就用约定好的算法，以及约定好的密钥加密 再传输 ，服务端收到报文后，用约定好的算法，约定好的密钥再解密 。这种方式，密钥和算法 对程序员都是透明的 。有些公司cookie就是这么使用的。</p>
+
+<p>2、一人一密钥
+简单说来就是每个人的密钥是固定的，但是每个人之间又不同，其实就是在固定密钥的算法中包含用户的某一特殊属性，比如用户uid、手机号等。</p>
+
+<p>据传，QQ是这么使用这种方式（未核实）</p>
+
+<p> 3、动态密钥</p>
+
+<p>大家了解ssl的过程么，动态密钥
+一Session一密钥的安全性更高，每次传输交互前协商密钥， 客户端第一个报文：服务端，请告诉我这次通话的密钥 ，服务器就随机生成一个，返回给客户端 然后这次会话用这个密钥来通信 ，这样可以简单的做到动态密钥，但是一旦攻击者截取报文，就能知道你的动态密钥。</p>
+
+<p>SSL的用法，是2次生成非对称加密密钥，1次生成对称加密密钥 ，具体详情这里不展开，有兴趣的可以深入研究一下。</p>
+
+<h3>传输层</h3>
+
+<p>传输层：TCP／UDP</p>
+
+<p>现在的IM传输层基本都是使用TCP。有了epoll／kqueue等技术后 ，单机多连接就不是瓶颈了，单机几十万链接没什么问题。58同城现在线上单机连接好像是10w？（可能单机性能测试可以到百万，线上一般跑到几十万）</p>
+
+<h5>关于QQ是使用UDP问题（作者观点）</h5>
+
+<p>10多年前，一台服务器支撑不了1W个TCP连接 ，腾讯的同时在线量高，没办法，只有用UDP了 ，但UDP又不可靠，腾讯使用UDP实现了TCP的超时／重传／确认等机制</p>
+
+<h2>WEB聊天室</h2>
+
+<h3>需求</h3>
+
+<p>下面是一个Web聊天室的截图
+<img src="/images/im-architecture/9.png"></p>
+
+<p>Web聊天室需求主要有一下几点：
+1）用户可以设置自己的名字
+2）进入聊天室后，可以看到所有其他人的名字
+3）可以看到所有人的聊天
+4）可以发言给所有人</p>
+
+<p>上面是Web聊天室的一些简单业务（像群吧？） ，设置名字／拉取其他人的信息 都是简单的请求响应式的需求这里不展开，主要重点讲怎么看历史聊天消息，怎么发消息给别人 。</p>
+
+<h3>系统架构</h3>
+
+<p>Web站点三层架构大家都很熟悉，大致是这个样子</p>
+
+<p> <img src="/images/im-architecture/10.png"></p>
+
+<p>LAMP是个典型解决方案 ,更典型的是这个样子<br/>
+ <img src="/images/im-architecture/11.png"></p>
+
+<ul>
+<li>数据层</li>
+</ul>
+
+
+<p>对于聊天室的简单需求，一个存用户信息，一个存消息两个表就可以了，下面是一个简化了的示例:</p>
+
+<blockquote><p>user( name vchar(16) unique );
+message( time timestamp, name vchar(16), msg vchar(140) );</p></blockquote>
+
+<p>有人进入，就往user里插入 ,有人退出，就从user里删除 ,有人发消息，就往message里插入 ,有人进入，往message里拉取，就能查询历史信息。</p>
+
+<h3>技术核心点</h3>
+
+<p>Web聊天室的核心店在于如何把发送的消息通知User表里的所有人？消息实时性，主要有三种方式，websocket、flashsocket、http轮询，本文只讲http轮询。</p>
+
+<ul>
+<li>轮询</li>
+</ul>
+
+
+<blockquote><p>什么是轮询？<br/>
+举个例子，在火车上想上洗手间，挤到洗手间旁，却发现洗手间有人，于是你只能回座位继续等。过了N分钟，又朝洗手间的方向挤过去，却发现洗手间还是有人，又只能回坐等。这么一而再，再而三的每隔N分钟去洗手间查看洗手间是否有蹲位，这就是轮询。</p>
+
+<p>程序代码：while(1){sleep 500ms; get msg;}</p></blockquote>
+
+<p>大部分人最容易想到的解决方案就是轮询（poll） 。十几年前，四通利方／碧海银沙就是用的轮询，轮询拉取消息，每隔几秒往message表里，拉取最新的聊天室消息 ，这样做能简单实现一个聊天室。</p>
+
+<p>但轮询问题也显而易见 ，每隔N分钟，轮询调用 “获取消息”接口，有可能出现消息的延时，某一时刻刚刚拉取完消息，突然又产生了一条新消息，这条消息就必须等到N分钟之后，再次发起“获取消息”轮询时，才有机会获取到。 可以降低时间间隔来降低延时，但绝大部分的轮询调用，都没有消息返回，造成服务端极大的资源浪费</p>
+
+<ul>
+<li>消息连接
+Web聊天室通过“http消息连接”来保证消息的绝对实时性，何谓消息连接？</li>
+</ul>
+
+
+<p>用户和服务器建立一条http连接，专门用来传递Notify 。例如，手机上，web聊天室里，有一个B用户 专门有一条http消息连接，用来投递Notify（消息），如下图 。<br/>
+ <img src="/images/im-architecture/12.png"></p>
+
+<p>消息连接如何保证 web聊天室消息的实时性呢？它具有以下几个特性：</p>
+
+<p>1、没有消息到达的时候，这个http消息连接将被夯住，不返回，由于http是短连接，这个http消息连接最多被夯住90秒，就会被断开（这是浏览器或者webserver的行为）。</p>
+
+<p>2、如果http消息连接被断开，立马再发起一个http消息连接
+ <img src="/images/im-architecture/13.png"></p>
+
+<p>如上图，http消息连接90s超时了，服务器返回空了，web浏览器会立马再次发起一个新的消息连接 。目的是，保证一个用户一直有一条消息连接连着，可以接受消息</p>
+
+<p>3、每次收到消息时，这个消息连接就能及时将消息带回浏览器页面，并且在返回后，会立马再发起一个http消息连接</p>
+
+<p> <img src="/images/im-architecture/14.png"></p>
+
+<p>如上图，某人发送了一条聊天室消息 ，这个消息要投递给user里的所有人，B是其中之一，此时会有一条消息连接在，消息连接就直接将消息带回 ，带会消息后，立马再发起消息连接 。</p>
+
+<p>4、消息池</p>
+
+<p>上面三大特性保证了：a）任何时间都有消息连接在  ，b）消息能在第一时间通过消息连接返回</p>
+
+<p>但这里有个小概率事件，正在返回消息的时候（可以认为此时没有消息连接），瞬间又到达了一条消息怎么办，此时服务端要有一个类似于“消息池”的东西，将这个消息暂存起来 。消息连接到达后，从消息池中将消息取回，再通过消息连接返回。</p>
+
+<p><img src="/images/im-architecture/14.png"><br/>
+看上图中的步骤1-7</p>
+
+<p>1）消息要投递给聊天室中的所有人，B是其中之一
+2）此时没有消息连接，msg放入消息池
+3）消息连接来晚了
+4）从消息池中获取消息
+5）获取到消息了
+6）返回消息给web浏览器里的B
+7）新的消息连接发起</p>
+
+<p>结论：</p>
+
+<p>Web聊天室通过http长轮询可以保证消息的实时性。这种实时性的保证不是通过增加轮询频率来保证的，而是通过夯住http消息连接来保证的，在大部分时间没有实时消息的情况下，这个http消息连接对于webserver的请求压力是90秒1次，能够大大节省了web服务器资源。</p>
+
+<p>58沈剑 21:51
+这个消息连接的思想，是一个观察者模式 ，所有的聊天室用户是observer，聊天室是subject，observer订阅subject ，subject保存有所有observer的集合，当有消息发出，即subject发生改变时，通过http消息连接反向通知subject</p>
+
+<p>这里重点讨论了 web聊天室 消息的实时性，聊天消息的可靠投递，暂时也先不展开了</p>
+
+<p>即时，是相对时间而不是绝对时间 ，m的即时，消息投递在几百毫秒，1秒内投递完成，一般都可以接受（站点应用这个时间就接受不了解），这个时间对未来我讲im服务的网络模型，影响很大 。 im的所有业务逻辑，都是在这几百毫秒内完成的 。</p>
+
+<h2>IM典型业务场景</h2>
+
+<p>IM业务逻辑有一定的复杂度，举例IM中一个典型业务场景，用户A将用户B加入到分组G中，如下图：<br/>
+<img src="/images/im-architecture/15.png"></p>
+
+<p>这里包含多少业务逻辑呢
+第一步，判断A是否是正常im用户 <br/>
+第二步，判断B是否是正常im用户  <br/>
+第三步，判断分组G是否存在 <br/>
+第四步，是否A和B已经是好友 <br/>
+第五步，用户A是否加黑了B  <br/>
+第六步，用户B是否加黑了A  <br/>
+第七步／用户A的加好友频率是否过快    <br/>
+第八步，加好友的验证文字是否合法。“我是xx，请加我为好友”就是这个文字的验证。 <br/>
+第九步，检查B的加好友策略 ，是“允许所有”还是“需要验证”还是“禁止所有”</p>
+
+<p>都9步了，真正的加好友步骤却还没开始，这里的每一个步骤，都不是一个简单的本地cpu计算能完成的，都需要访问数据库或者后端服务 ，所以im的业务逻辑是很复杂的，做过的人懂。</p>
+
+<p>上面有一个步骤，是检查加好友的验证短语的合法性 。IM系统中，所有能被别人看到的话，都要经过antispam验证 ，antispam一般有敏感词（政治，黄色）过滤，消息频率过滤，广告过滤 ，每一个步骤，都有很复杂的词库过滤，或者分析过滤（分析一句话是不是广告，非常复杂）</p>
+
+    </div>
+
+
+
+    <div class="sidenav">
+        <h2>官方出版</h2>
+        <ul class="artical-list">
+        
+            <li><a href="/im-architecture">【图文直播全文记录】关于im的一切 （上）</a></li>
+        
+            <li><a href="/different-silicon-valley">【图文直播全文记录】给你介绍一个不一样的硅谷</a></li>
+        
+            <li><a href="/xapian-analysis">【直播全文记录】基于Xapian的垂直搜索引擎的构建分析</a></li>
+        
+            <li><a href="/realtime-compute">【直播全文记录】实时计算在点评</a></li>
+        
+        <h2>分享延伸</h2>
+        <ul class="artical-list">
+        
+            <li><a href="/data-aggregate-architecture">【微主题延伸】聚集第三方数据系统架构如何设计</a></li>
+        
+        </ul>
+
+        <h2>常用资源</h2>
+        <ul class="artical-list">
+        
+            <li><a href="/favorite-blog-list">经常关注的技术博客</a></li>
+        
+            <li><a href="/favorite-article-list">收藏比较经典的技术文章</a></li>
+        
+        </ul>
+
+        
+        </ul>
+    </div>
+</div>
+
+<script src="/js/post.js" type="text/javascript"></script>
+
+	
+    <div class="home-menu">
+        <div class="home-icon-con">
+            <a class="home-menu-icon" href="/">QCon高可用架构群官方博客</a>
+            <a class="home-follow" href="#" title="Contact Me">+</a>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        $(function(){
+            $('.home-follow').click(function(e){
+                e.preventDefault();
+
+                if($('.home-contact').is(':visible')){
+                    $('.home-contact').slideUp(100);
+                }else{
+                    $('.home-contact').slideDown(100);
+                }
+            });
+        })
+    </script>
+</body>
+</html>
