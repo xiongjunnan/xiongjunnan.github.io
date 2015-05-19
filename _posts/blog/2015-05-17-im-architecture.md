@@ -152,7 +152,7 @@ Xmpp协议有几个特点：
 <strong>变长包体</strong>  
 
 
-可选择 Xml、protobuffer、百度的mcpack ,58同城使用protobuffer，作者也强烈推荐，主要有几个原因：
+可选择 Xml、protobuffer、mcpack ,某些公司使用protobuffer，作者也强烈推荐，主要有几个原因：
       
 * 现成的解析库种类多，可以生成C++、Java、php等代码
 * 自带压缩功能
