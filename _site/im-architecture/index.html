@@ -334,8 +334,7 @@ message( time timestamp, name vchar(16), msg vchar(140) );</p></blockquote>
 
 <p>Web聊天室通过http长轮询可以保证消息的实时性。这种实时性的保证不是通过增加轮询频率来保证的，而是通过夯住http消息连接来保证的，在大部分时间没有实时消息的情况下，这个http消息连接对于webserver的请求压力是90秒1次，能够大大节省了web服务器资源。</p>
 
-<p>58沈剑 21:51
-这个消息连接的思想，是一个观察者模式 ，所有的聊天室用户是observer，聊天室是subject，observer订阅subject ，subject保存有所有observer的集合，当有消息发出，即subject发生改变时，通过http消息连接反向通知subject</p>
+<p>这个消息连接的思想，是一个观察者模式 ，所有的聊天室用户是observer，聊天室是subject，observer订阅subject ，subject保存有所有observer的集合，当有消息发出，即subject发生改变时，通过http消息连接反向通知subject</p>
 
 <p>这里重点讨论了 web聊天室 消息的实时性，聊天消息的可靠投递，暂时也先不展开了</p>
 
